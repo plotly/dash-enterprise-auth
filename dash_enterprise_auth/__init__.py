@@ -1,3 +1,9 @@
+"""
+dash-enterprise auth
+
+Methods to integrate dash apps with the authentication from the
+dash-deployment-server.
+"""
 import datetime as _dt
 import os as _os
 import base64 as _b64
@@ -58,6 +64,12 @@ def _get_current_user_request():
 
 @_need_request_context
 def get_username():
+    """
+    Get the current user.
+
+    :return: The current user.
+    :rtype: str
+    """
     res_json = _get_current_user_request()
 
     return res_json.get('username')
@@ -65,6 +77,11 @@ def get_username():
 
 @_need_request_context
 def get_kerberos_ticket_cache():
+    """
+    Get the kerberos ticket for the current logged user.
+
+    :return: The kerberos ticket cache.
+    """
     res_json = _get_current_user_request()
 
     expiry_str = res_json['kerberos_ticket_expiry']
