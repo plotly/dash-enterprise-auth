@@ -52,6 +52,11 @@ def create_logout_button(label='Logout'):
 
 
 @_need_request_context
+def get_user_data():
+    return _flask.request.headers.get('Plotly-User-Data', {})
+
+
+@_need_request_context
 def get_username():
     """
     Get the current user.
@@ -59,8 +64,7 @@ def get_username():
     :return: The current user.
     :rtype: str
     """
-    user_data = _flask.request.headers.get('Plotly-User-Data', {})
-    return user_data.get('username')
+    return get_user_data().get('username')
 
 
 @_need_request_context
