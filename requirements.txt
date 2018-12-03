@@ -1,5 +1,10 @@
-dash-core-components
+dash-core-components>=0.40.0
 flask
 requests[security]
 plotly
 retrying
+# Dev requirements
+dash
+dash-html-components
+selenium
+
