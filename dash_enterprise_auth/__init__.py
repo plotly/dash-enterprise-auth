@@ -52,17 +52,6 @@ def create_logout_button(label='Logout'):
 
 
 @_need_request_context
-def _get_current_user_request():
-    token = _flask.request.cookies.get('plotly_oauth_token')
-
-    res = _api_requests.get(
-        '/v2/users/current?kerberos=1',
-        headers={'Authorization': 'Bearer {}'.format(token)},
-    )
-    return res.json()
-
-
-@_need_request_context
 def get_username():
     """
     Get the current user.
@@ -70,9 +59,8 @@ def get_username():
     :return: The current user.
     :rtype: str
     """
-    res_json = _get_current_user_request()
-
-    return res_json.get('username')
+    user_data = _flask.request.headers.get('Plotly-User-Data', {})
+    return user_data.get('username')
 
 
 @_need_request_context
@@ -82,7 +70,13 @@ def get_kerberos_ticket_cache():
 
     :return: The kerberos ticket cache.
     """
-    res_json = _get_current_user_request()
+    token = _flask.request.cookies.get('plotly_oauth_token')
+
+    res = _api_requests.get(
+        '/v2/users/current?kerberos=1',
+        headers={'Authorization': 'Bearer {}'.format(token)},
+    )
+    res_json = res.json()
 
     expiry_str = res_json['kerberos_ticket_expiry']
     expiry = _dt.datetime.strptime(expiry_str, '%Y-%m-%dT%H:%M:%SZ')
