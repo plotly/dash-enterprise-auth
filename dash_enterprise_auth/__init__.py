@@ -75,17 +75,11 @@ def get_kerberos_ticket_cache():
 
     :return: The kerberos ticket cache.
     """
-    token = _flask.request.cookies.get('plotly_oauth_token')
+    data = get_user_data()
 
-    res = _api_requests.get(
-        '/v2/users/current?kerberos=1',
-        headers={'Authorization': 'Bearer {}'.format(token)},
-    )
-    res_json = res.json()
-
-    expiry_str = res_json['kerberos_ticket_expiry']
+    expiry_str = data['kerberos_ticket_expiry']
     expiry = _dt.datetime.strptime(expiry_str, '%Y-%m-%dT%H:%M:%SZ')
     if expiry < _dt.datetime.utcnow():
         raise Exception('Kerberos ticket has expired.')
 
-    return _b64.b64decode(res_json['kerberos_ticket_cache'])
+    return _b64.b64decode(data['kerberos_ticket_cache'])
