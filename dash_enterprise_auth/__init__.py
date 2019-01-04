@@ -8,6 +8,7 @@ import datetime as _dt
 import os as _os
 import base64 as _b64
 import functools as _ft
+import json as _json
 
 import dash_core_components as _dcc
 import flask as _flask
@@ -53,7 +54,7 @@ def create_logout_button(label='Logout'):
 
 @_need_request_context
 def get_user_data():
-    return _flask.request.headers.get('Plotly-User-Data', {})
+    return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
 
 
 @_need_request_context
