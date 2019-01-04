@@ -13,8 +13,6 @@ import json as _json
 import dash_core_components as _dcc
 import flask as _flask
 
-from . import _api_requests
-
 
 __version__ = '0.0.1'
 
