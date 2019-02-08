@@ -4,6 +4,7 @@ dash-enterprise auth
 Methods to integrate dash apps with the authentication from the
 dash-deployment-server.
 """
+from .version import __version__
 import datetime as _dt
 import os as _os
 import base64 as _b64
@@ -13,8 +14,6 @@ import json as _json
 import dash_core_components as _dcc
 import flask as _flask
 
-
-__version__ = '0.0.1'
 
 logout_url = _os.getenv('DASH_LOGOUT_URL')
 
