@@ -1,3 +1,7 @@
+## [0.0.2] - 2019-02-08
+### Fixed
+- Fixed package on Pypi [#3](https://github.com/plotly/dash-enterprise-auth/pull/3)
+
 ## [0.0.1] - 
 ### Added
 **Initial release**
