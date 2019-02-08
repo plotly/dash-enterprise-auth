@@ -4,6 +4,7 @@ dash-enterprise auth
 Methods to integrate dash apps with the authentication from the
 dash-deployment-server.
 """
+from .version import __version__
 import datetime as _dt
 import os as _os
 import base64 as _b64
