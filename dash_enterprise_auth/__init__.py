@@ -14,8 +14,6 @@ import dash_core_components as _dcc
 import flask as _flask
 
 
-__version__ = '0.0.1'
-
 logout_url = _os.getenv('DASH_LOGOUT_URL')
 
 
