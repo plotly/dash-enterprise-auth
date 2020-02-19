@@ -12,7 +12,7 @@ setup(
     long_description_content_type="text/markdown",
     keywords="dash dash-enterprise dash-auth plotly",
     author="Antoine Roy-Gobeil",
-    author_email="antoine@plot.ly",
+    author_email="antoine@plotly.com",
     packages=[
         "dash_enterprise_auth"
     ],
