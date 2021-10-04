@@ -11,7 +11,7 @@ import base64 as _b64
 import functools as _ft
 import json as _json
 
-import dash_core_components as _dcc
+from dash import dcc as _dcc
 import flask as _flask
 
 
