@@ -11,7 +11,11 @@ import base64 as _b64
 import functools as _ft
 import json as _json
 
-import dash_core_components as _dcc
+import dash as _dash
+if hasattr(_dash, "dcc"):
+    _dcc = _dash.dcc
+else:
+    import dash_core_components as _dcc
 import flask as _flask
 
 

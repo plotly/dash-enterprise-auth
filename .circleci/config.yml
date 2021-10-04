@@ -1,0 +1,18 @@
+version: 2.1
+workflows:
+  main:
+    jobs:
+      - build
+
+jobs:
+  build:
+    docker:
+      - image: cimg/python:3.6
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: |
+            python setup.py sdist --formats=zip,gztar
+      - store_artifacts:
+          path: dist

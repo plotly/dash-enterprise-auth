@@ -1,3 +1,7 @@
+## UNRELEASED
+### Fixed
+- Gracefully import dash_core_components whether Dash's version is 1.x or 2.x [#15](https://github.com/plotly/dash-enterprise-auth/pull/15)
+
 ## [0.0.4] - 2020-02-05
 ### Fixed
 - Fixed package installation on Python 3.6.[0-4] [#11](https://github.com/plotly/dash-enterprise-auth/pull/11)
