@@ -13,6 +13,6 @@ jobs:
       - run:
           name: Build
           command: |
-            python setup.py bdist_wheel sdist --formats=zip,gztar
+            python setup.py bdist_wheel sdist --formats=gztar
       - store_artifacts:
           path: dist
