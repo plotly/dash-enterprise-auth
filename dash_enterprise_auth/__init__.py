@@ -10,6 +10,9 @@ import os as _os
 import base64 as _b64
 import functools as _ft
 import json as _json
+import jwt
+from jwt import PyJWKClient
+from jwt.exceptions import InvalidTokenError
 
 import dash as _dash
 if hasattr(_dash, "dcc"):
@@ -18,9 +21,8 @@ else:
     import dash_core_components as _dcc
 import flask as _flask
 
-
 logout_url = _os.getenv('DASH_LOGOUT_URL')
-
+jwks_url = _os.getEnv('DASH_JWKS_URL')
 
 def _need_request_context(func):
     @_ft.wraps(func)
@@ -55,8 +57,33 @@ def create_logout_button(label='Logout'):
 
 @_need_request_context
 def get_user_data():
-    return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
+    return get_user_data_from_token()
+    #return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
 
+
+@_need_request_context
+def get_user_data_from_token():
+    if not jwks_url:
+        return _json.loads("{}")
+
+    try:
+        jwks_client = PyJWKClient(jwks_url)
+
+        b64token = _flask.request.cookies.get('kcIdToken') #should use kcToken for access token?
+        token = _b64.b64decode(b64token)
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+
+        return jwt.decode(
+            token,
+            signing_key.key,
+            algorithms=["RS256"],
+            audience=aud,
+            options={"verify_exp": True},
+        )
+    except Exception as e:
+        print(traceback.format_exc())
+        print(str(st) + " e: " + repr(e))
+    return _json.loads("{}")
 
 @_need_request_context
 def get_username():
