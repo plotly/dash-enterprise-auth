@@ -69,7 +69,7 @@ def get_user_data_from_token():
     try:
         jwks_client = PyJWKClient(jwks_url)
 
-        b64token = _flask.request.cookies.get('kcIdToken') #should use kcToken for access token?
+        b64token = _flask.request.cookies.get('kcIdToken') 
         token = _b64.b64decode(b64token)
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
@@ -77,7 +77,6 @@ def get_user_data_from_token():
             token,
             signing_key.key,
             algorithms=["RS256"],
-            audience=aud,
             options={"verify_exp": True},
         )
     except Exception as e:
