@@ -7,12 +7,13 @@ dash-deployment-server.
 from .version import __version__
 import datetime as _dt
 import os as _os
+import platform as _platform
 import base64 as _b64
 import functools as _ft
 import json as _json
-import jwt
-from jwt import PyJWKClient
-from jwt.exceptions import InvalidTokenError
+import jwt as _jwt
+import urllib as _urllib
+from typing import Any
 
 import dash as _dash
 if hasattr(_dash, "dcc"):
@@ -22,7 +23,16 @@ else:
 import flask as _flask
 
 logout_url = _os.getenv('DASH_LOGOUT_URL')
-jwks_url = _os.getEnv('DASH_JWKS_URL')
+jwks_url = _os.getenv('DASH_JWKS_URL')
+aud = _os.getenv('DASH_AUD', "dekn-dev")
+ua_string = 'Plotly/%s (Language=Python/%s; Platform=%s/%s)' % (__version__, _platform.python_version(), _platform.system(), _platform.release())
+
+
+class UaPyJWKClient(_jwt.PyJWKClient):
+    def fetch_data(self) -> Any:
+        with _urllib.request.urlopen(_urllib.request.Request(self.uri, headers={'User-Agent': ua_string})) as response:
+            return _json.load(response)
+
 
 def _need_request_context(func):
     @_ft.wraps(func)
@@ -58,7 +68,11 @@ def create_logout_button(label='Logout'):
 @_need_request_context
 def get_user_data():
     return get_user_data_from_token()
-    #return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
+
+
+@_need_request_context
+def get_legacy_user_data():
+    return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
 
 
 @_need_request_context
@@ -67,22 +81,23 @@ def get_user_data_from_token():
         return _json.loads("{}")
 
     try:
-        jwks_client = PyJWKClient(jwks_url)
+        jwks_client = UaPyJWKClient(jwks_url)
 
         b64token = _flask.request.cookies.get('kcIdToken') 
         token = _b64.b64decode(b64token)
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
-        return jwt.decode(
+        return _jwt.decode(
             token,
             signing_key.key,
             algorithms=["RS256"],
+            audience=aud,
             options={"verify_exp": True},
         )
     except Exception as e:
-        print(traceback.format_exc())
-        print(str(st) + " e: " + repr(e))
+        print("JWT decode error: " + repr(e))
     return _json.loads("{}")
+
 
 @_need_request_context
 def get_username():
@@ -92,7 +107,7 @@ def get_username():
     :return: The current user.
     :rtype: str
     """
-    return get_user_data().get('username')
+    return get_user_data().get('preferred_username')
 
 
 @_need_request_context
@@ -102,7 +117,7 @@ def get_kerberos_ticket_cache():
 
     :return: The kerberos ticket cache.
     """
-    data = get_user_data()
+    data = get_legacy_user_data()
 
     expiry_str = data['kerberos_ticket_expiry']
     expiry = _dt.datetime.strptime(expiry_str, '%Y-%m-%dT%H:%M:%SZ')
