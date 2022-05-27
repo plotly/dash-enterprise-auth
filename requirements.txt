@@ -4,5 +4,5 @@ PyJWT==2.3.0
 cryptography==35.0.0
 # Dev requirements
 dash
-selenium
-
+pytest
+pytest-mock

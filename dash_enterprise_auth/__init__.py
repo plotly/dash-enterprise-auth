@@ -23,8 +23,6 @@ else:
 import flask as _flask
 
 logout_url = _os.getenv('DASH_LOGOUT_URL')
-jwks_url = _os.getenv('DASH_JWKS_URL')
-aud = _os.getenv('DASH_AUD', "dekn-dev")
 ua_string = 'Plotly/%s (Language=Python/%s; Platform=%s/%s)' % (__version__, _platform.python_version(), _platform.system(), _platform.release())
 
 
@@ -67,36 +65,26 @@ def create_logout_button(label='Logout'):
 
 @_need_request_context
 def get_user_data():
-    return get_user_data_from_token()
-
-
-@_need_request_context
-def get_legacy_user_data():
-    return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
-
-
-@_need_request_context
-def get_user_data_from_token():
+    jwks_url = _os.getenv('DASH_JWKS_URL')
     if not jwks_url:
-        return _json.loads("{}")
-
+        return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
     try:
         jwks_client = UaPyJWKClient(jwks_url)
 
-        b64token = _flask.request.cookies.get('kcIdToken') 
+        b64token = _flask.request.cookies.get('kcIdToken')
         token = _b64.b64decode(b64token)
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
         return _jwt.decode(
             token,
             signing_key.key,
-            algorithms=["RS256"],
-            audience=aud,
+            algorithms=[signing_key._jwk_data.get('alg', 'RSA256')],
+            audience=_os.getenv('DASH_AUD', "dekn-dev"),
             options={"verify_exp": True},
         )
     except Exception as e:
         print("JWT decode error: " + repr(e))
-    return _json.loads("{}")
+    return {}
 
 
 @_need_request_context
@@ -107,7 +95,10 @@ def get_username():
     :return: The current user.
     :rtype: str
     """
-    return get_user_data().get('preferred_username')
+    data = get_user_data()
+    if not _os.getenv('DASH_JWKS_URL'):
+        return data.get('username')
+    return data.get('preferred_username')
 
 
 @_need_request_context
@@ -117,7 +108,7 @@ def get_kerberos_ticket_cache():
 
     :return: The kerberos ticket cache.
     """
-    data = get_legacy_user_data()
+    data = get_user_data()
 
     expiry_str = data['kerberos_ticket_expiry']
     expiry = _dt.datetime.strptime(expiry_str, '%Y-%m-%dT%H:%M:%SZ')
