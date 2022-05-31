@@ -1,3 +1,7 @@
+## [0.0.6] - 2022-05-31
+### Added
+- Support for Dash Enterprise 5 [#20](https://github.com/plotly/dash-enterprise-auth/pull/20)
+
 ## [0.0.5] - 2021-10-04
 ### Fixed
 - Gracefully import dash_core_components whether Dash's version is 1.x or 2.x [#15](https://github.com/plotly/dash-enterprise-auth/pull/15)
