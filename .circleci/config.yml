@@ -10,9 +10,27 @@ jobs:
       - image: cimg/python:3.6
     steps:
       - checkout
+      - restore_cache:
+          key: dep-{{ checksum ".circleci/config.yml" }}-{{ checksum "setup.py" }}-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install requirements
+          command: |
+            python -m venv venv
+            . venv/bin/activate
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+      - save_cache:
+          key: dep-{{ checksum ".circleci/config.yml" }}-{{ checksum "setup.py" }}-{{ checksum "requirements.txt" }}
+          paths:
+            - venv
       - run:
           name: Build
           command: |
             python setup.py bdist_wheel --universal sdist --formats=gztar
+      - run:
+          name: Test
+          command: |
+            . venv/bin/activate
+            pytest tests
       - store_artifacts:
           path: dist

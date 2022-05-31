@@ -7,9 +7,13 @@ dash-deployment-server.
 from .version import __version__
 import datetime as _dt
 import os as _os
+import platform as _platform
 import base64 as _b64
 import functools as _ft
 import json as _json
+import jwt as _jwt
+import urllib as _urllib
+from typing import Any
 
 import dash as _dash
 if hasattr(_dash, "dcc"):
@@ -18,8 +22,14 @@ else:
     import dash_core_components as _dcc
 import flask as _flask
 
-
 logout_url = _os.getenv('DASH_LOGOUT_URL')
+ua_string = 'Plotly/%s (Language=Python/%s; Platform=%s/%s)' % (__version__, _platform.python_version(), _platform.system(), _platform.release())
+
+
+class UaPyJWKClient(_jwt.PyJWKClient):
+    def fetch_data(self) -> Any:
+        with _urllib.request.urlopen(_urllib.request.Request(self.uri, headers={'User-Agent': ua_string})) as response:
+            return _json.load(response)
 
 
 def _need_request_context(func):
@@ -55,7 +65,26 @@ def create_logout_button(label='Logout'):
 
 @_need_request_context
 def get_user_data():
-    return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
+    jwks_url = _os.getenv('DASH_JWKS_URL')
+    if not jwks_url:
+        return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
+    try:
+        jwks_client = UaPyJWKClient(jwks_url)
+
+        b64token = _flask.request.cookies.get('kcIdToken')
+        token = _b64.b64decode(b64token)
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+
+        return _jwt.decode(
+            token,
+            signing_key.key,
+            algorithms=[signing_key._jwk_data.get('alg', 'RSA256')],
+            audience=_os.getenv('DASH_AUD', "dash"),
+            options={"verify_exp": True},
+        )
+    except Exception as e:
+        print("JWT decode error: " + repr(e))
+    return {}
 
 
 @_need_request_context
@@ -66,7 +95,10 @@ def get_username():
     :return: The current user.
     :rtype: str
     """
-    return get_user_data().get('username')
+    data = get_user_data()
+    if not _os.getenv('DASH_JWKS_URL'):
+        return data.get('username')
+    return data.get('preferred_username')
 
 
 @_need_request_context
