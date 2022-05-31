@@ -79,7 +79,7 @@ def get_user_data():
             token,
             signing_key.key,
             algorithms=[signing_key._jwk_data.get('alg', 'RSA256')],
-            audience=_os.getenv('DASH_AUD', "dekn-dev"),
+            audience=_os.getenv('DASH_AUD', "dash"),
             options={"verify_exp": True},
         )
     except Exception as e:
