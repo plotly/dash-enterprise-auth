@@ -62,14 +62,17 @@ def test_get_username(mocker, environ, headers, cookies):
     ({
         'DASH_LOGOUT_URL': LOGOUT_URL,
         'DASH_JWKS_URL': 'https://foo.bar'
-    }, [([], html.Div, {}), (['children'], html.A, {'children': 'Logout', 'href': LOGOUT_URL})])
+    }, [
+        ([], html.Div, {'style': {'display': 'inline-block', 'padding': '1rem'}}),
+        (['children'], html.A, {'children': 'Logout', 'href': LOGOUT_URL})
+    ])
 ])
 def test_create_logout_button(mocker, environ, type_assertions):
     mocker.patch("os.getenv", create_mock_getter(environ))
 
     import dash_enterprise_auth as dea
 
-    logout_button = dea.create_logout_button()
+    logout_button = dea.create_logout_button(style={'padding': '1rem'})
 
     for path, tas, props in type_assertions:
         current = logout_button

@@ -47,13 +47,15 @@ def _need_request_context(func):
     return _wrap
 
 
-def create_logout_button(label='Logout'):
+def create_logout_button(label='Logout', style=None):
     """
     Create a dcc.LogoutButton with the dash-deployment-server logout url set
     in the environment.
 
     :param label: Text of the logout button.
     :type label: str
+    :param style: Extra style to add to the logout button.
+    :type style: dict
     :return:
     """
     logout_url = _os.getenv('DASH_LOGOUT_URL')
@@ -66,7 +68,13 @@ def create_logout_button(label='Logout'):
         return _dcc.LogoutButton(
             logout_url=logout_url,
             label=label,
+            style=style,
         )
+
+    btn_style = {'display': 'inline-block'}
+    if style:
+        btn_style.update(style)
+
     return _html.Div(
         _html.A(
             label,
@@ -75,7 +83,7 @@ def create_logout_button(label='Logout'):
             style={'textDecoration': 'none'}
         ),
         className='dash-logout-frame',
-        style={'display': 'inline-block'}
+        style=btn_style
     )
 
 
