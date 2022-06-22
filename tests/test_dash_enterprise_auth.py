@@ -6,6 +6,7 @@ import jwt
 import time
 from jwt import PyJWK
 
+from dash import html, dcc
 
 secret_key = "abovetopsecret"
 
@@ -16,7 +17,7 @@ key_data = {
 }
 
 AUD = "dash-aud"
-
+LOGOUT_URL = 'https://logout.e.com'
 
 def create_mock_getter(env):
     def get(key, default=None):
@@ -52,3 +53,34 @@ def test_get_username(mocker, environ, headers, cookies):
         username = dea.get_username()
 
         assert username == "Mario"
+
+
+@pytest.mark.parametrize("environ, type_assertions", [
+    ({
+        'DASH_LOGOUT_URL': LOGOUT_URL,
+    }, [([], dcc.LogoutButton, {'label': 'Logout', 'logout_url': LOGOUT_URL})]),
+    ({
+        'DASH_LOGOUT_URL': LOGOUT_URL,
+        'DASH_JWKS_URL': 'https://foo.bar'
+    }, [
+        ([], html.Div, {'style': {'display': 'inline-block', 'padding': '1rem'}}),
+        (['children'], html.A, {'children': 'Logout', 'href': LOGOUT_URL})
+    ])
+])
+def test_create_logout_button(mocker, environ, type_assertions):
+    mocker.patch("os.getenv", create_mock_getter(environ))
+
+    import dash_enterprise_auth as dea
+
+    logout_button = dea.create_logout_button(style={'padding': '1rem'})
+
+    for path, tas, props in type_assertions:
+        current = logout_button
+
+        for p in path:
+            current = getattr(current, p)
+
+        assert isinstance(current, tas)
+
+        for k, v in props.items():
+            assert getattr(current, k) == v
