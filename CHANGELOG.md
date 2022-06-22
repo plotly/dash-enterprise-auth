@@ -1,3 +1,10 @@
+## [0.1.0] - 2022-06-22
+### Added
+- Add `style` argument to `create_logout_button`. [#22](https://github.com/plotly/dash-enterprise-auth/pull/22)
+
+### Changed
+- Use a raw `html.A` to create the logout button if on Dash Enterprise 5. [#22](https://github.com/plotly/dash-enterprise-auth/pull/22)
+
 ## [0.0.6] - 2022-05-31
 ### Added
 - Support for Dash Enterprise 5 [#20](https://github.com/plotly/dash-enterprise-auth/pull/20)
