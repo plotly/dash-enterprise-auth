@@ -15,6 +15,8 @@ import jwt as _jwt
 import urllib as _urllib
 from typing import Any
 
+import requests as _requests
+
 import dash as _dash
 if hasattr(_dash, "dcc"):
     _dcc = _dash.dcc
@@ -90,6 +92,7 @@ def create_logout_button(label='Logout', style=None):
 @_need_request_context
 def get_user_data():
     jwks_url = _os.getenv('DASH_JWKS_URL')
+    info_url = _os.getenv('DASH_USER_INFO_URL')
     if not jwks_url:
         return _json.loads(_flask.request.headers.get('Plotly-User-Data', "{}"))
     try:
@@ -99,15 +102,29 @@ def get_user_data():
         token = _b64.b64decode(b64token)
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
-        return _jwt.decode(
+        info = _jwt.decode(
             token,
             signing_key.key,
             algorithms=[signing_key._jwk_data.get('alg', 'RSA256')],
             audience=_os.getenv('DASH_AUD', "dash"),
-            options={"verify_exp": True},
+            options={'verify_exp': True},
         )
+        if info_url:
+            authorization = f'Bearer {b64token}'
+            response = _requests.get(
+                info_url,
+                headers={
+                    'User-Agent': ua_string,
+                    'Authorization': authorization,
+                }
+            )
+            response.raise_for_status()
+            data = response.json()
+            info.update(data)
+
+        return info
     except Exception as e:
-        print("JWT decode error: " + repr(e))
+        print('JWT decode error: ' + repr(e))
     return {}
 
 
