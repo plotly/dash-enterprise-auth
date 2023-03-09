@@ -89,6 +89,11 @@ def create_logout_button(label='Logout', style=None):
     )
 
 
+def _get_decoded_token(name):
+    token = _flask.request.cookies.get(name)
+    return _b64.b64decode(token)
+
+
 @_need_request_context
 def get_user_data():
     jwks_url = _os.getenv('DASH_JWKS_URL')
@@ -98,8 +103,7 @@ def get_user_data():
     try:
         jwks_client = UaPyJWKClient(jwks_url)
 
-        b64token = _flask.request.cookies.get('kcIdToken')
-        token = _b64.b64decode(b64token)
+        token = _get_decoded_token('kcIdToken')
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
         info = _jwt.decode(
@@ -110,7 +114,8 @@ def get_user_data():
             options={'verify_exp': True},
         )
         if info_url:
-            authorization = f'Bearer {b64token}'
+            tok = _get_decoded_token('kcToken')
+            authorization = f'Bearer {tok.decode()}'
             response = _requests.get(
                 info_url,
                 headers={
