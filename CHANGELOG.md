@@ -1,3 +1,7 @@
+## [0.1.1] - 2023-03-09
+### Fixed
+- Add back user info from keycloak user info endpoint. [#24](https://github.com/plotly/dash-enterprise-auth/pull/24)
+
 ## [0.1.0] - 2022-06-22
 ### Added
 - Add `style` argument to `create_logout_button`. [#22](https://github.com/plotly/dash-enterprise-auth/pull/22)
