@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import copy
 import logging
 import os
@@ -8,16 +7,8 @@ import requests
 import socket
 import sys
 
-try:
-    import http.client as http_client
-except ImportError:
-    # Python 2
-    import httplib as http_client
-
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
+import http.client as http_client
+from urllib.parse import urlparse
 
 
 # API requests get their config from the environment.
