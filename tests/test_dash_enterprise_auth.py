@@ -1,10 +1,9 @@
 import base64
+import time
 
 import pytest
 import flask
 import jwt
-import time
-from jwt import PyJWK
 
 from dash import html, dcc
 
@@ -18,6 +17,7 @@ key_data = {
 
 AUD = "dash-aud"
 LOGOUT_URL = 'https://logout.e.com'
+
 
 def create_mock_getter(env):
     def get(key, default=None):
@@ -41,7 +41,7 @@ def test_get_username(mocker, environ, headers, cookies):
     mocker.patch("os.getenv", create_mock_getter(environ))
     mocker.patch(
         "dash_enterprise_auth.UaPyJWKClient.get_signing_key_from_jwt",
-        return_value=PyJWK(key_data)
+        return_value=jwt.PyJWK(key_data)
     )
     with flask.Flask(__name__).test_request_context():
         mocker.patch("flask.has_request_context", return_value=True)
