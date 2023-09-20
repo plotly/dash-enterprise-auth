@@ -1,7 +1,9 @@
 requests[security]
 retrying
-PyJWT==2.3.0
-cryptography==35.0.0
+PyJWT==2.4.0;python_version<"3.7"
+PyJWT==2.8.0;python_version>="3.7"
+cryptography<3.4;python_version<"3.7"
+cryptography==41.0.4;python_version>="3.7"
 # Dev requirements
 dash
 pytest
