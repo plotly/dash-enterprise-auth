@@ -1,6 +1,6 @@
 
 build:
-    python setup.py bdist_wheel --universal sdist --formats=gztar
+    python setup.py bdist_wheel sdist --formats=gztar
     rm -rf build
 
 test:
