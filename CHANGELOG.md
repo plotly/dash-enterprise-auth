@@ -1,3 +1,12 @@
+# Change Log for Dash Enterprise Auth
+All notable changes to `dash-enterprise-auth` will be documented in this file.
+This project adheres to [Semantic Versioning](https://semver.org/).
+
+## [0.2.0] - 2023-08-03
+### Updated
+- Dropped support for Python versions below 3.6
+- Added MIT license
+
 ## [0.1.1] - 2023-03-09
 ### Fixed
 - Add back user info from keycloak user info endpoint. [#24](https://github.com/plotly/dash-enterprise-auth/pull/24)
@@ -29,7 +38,7 @@
 ### Fixed
 - Fixed package on Pypi [#3](https://github.com/plotly/dash-enterprise-auth/pull/3)
 
-## [0.0.1] - 
+## [0.0.1] -
 ### Added
 **Initial release**
 
