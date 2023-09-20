@@ -23,7 +23,6 @@ setup(
     install_requires=[
         "dash",
         "requests[security]",
-        "retrying",
         "PyJWT",
         "cryptography"
     ],

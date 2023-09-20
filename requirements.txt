@@ -1,5 +1,4 @@
 requests[security]
-retrying
 PyJWT==2.4.0;python_version<"3.7"
 PyJWT==2.8.0;python_version>="3.7"
 cryptography<3.4;python_version<"3.7"
