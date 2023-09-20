@@ -2,10 +2,11 @@ version: 2.1
 workflows:
   main:
     jobs:
-      - build
+      - build-36
+      - build-311
 
 jobs:
-  build:
+  build-36: &build
     docker:
       - image: cimg/python:3.6
     steps:
@@ -26,7 +27,7 @@ jobs:
       - run:
           name: Build
           command: |
-            python setup.py bdist_wheel --universal sdist --formats=gztar
+            python setup.py bdist_wheel sdist --formats=gztar
       - run:
           name: Test
           command: |
@@ -34,3 +35,7 @@ jobs:
             pytest tests
       - store_artifacts:
           path: dist
+  build-311:
+    <<: *build
+    docker:
+      - image: cimg/python:3.11
