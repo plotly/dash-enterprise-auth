@@ -22,6 +22,8 @@ setup(
     ],
     install_requires=[
         "dash",
+        "Flask>=1.0.4,<2.3.0",
+        "Werkzeug<2.3.0",
         "requests[security]",
         "PyJWT",
         "cryptography"
