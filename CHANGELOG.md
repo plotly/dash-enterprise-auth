@@ -2,7 +2,7 @@
 All notable changes to `dash-enterprise-auth` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## [0.2.1] - 2023-10-06
+## [0.2.1] - 2023-10-12
 - Add Flask and Werkzeug upper version bounds at `<2.3`. This matches the constraint in Dash v2.13. After we relax the constraint in Dash we will come back and - after testing that it works - relax it here as well.
 
 ## [0.2.0] - 2023-08-03

@@ -26,7 +26,8 @@ setup(
         "Werkzeug<2.3.0",
         "requests[security]",
         "PyJWT",
-        "cryptography"
+        'cryptography;python_version>="3.7"',
+        'cryptography<3.4;python_version<"3.7"'
     ],
     python_requires=">=3.6",
     url="https://plotly.com/dash",
