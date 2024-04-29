@@ -15,6 +15,7 @@ from typing import Any
 import flask as _flask
 import jwt as _jwt
 import requests as _requests
+import traceback
 
 
 import dash as _dash
@@ -137,6 +138,7 @@ def get_user_data():
         return info
     except Exception as e:
         print("JWT decode error: " + repr(e))
+        traceback.print_exc()
     return {}
 
 
