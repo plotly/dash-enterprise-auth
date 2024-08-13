@@ -27,7 +27,8 @@ setup(
         "requests[security]",
         "PyJWT",
         'cryptography;python_version>="3.7"',
-        'cryptography<3.4;python_version<"3.7"'
+        'cryptography<3.4;python_version<"3.7"',
+        "retrying==1.3.3",
     ],
     python_requires=">=3.6",
     url="https://plotly.com/dash",
@@ -42,5 +43,5 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-    ]
+    ],
 )
