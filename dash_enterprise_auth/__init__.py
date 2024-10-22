@@ -97,7 +97,10 @@ def create_logout_button(label="Logout", style=None):
 
 
 def _get_decoded_token(name):
-    token = _flask.request.cookies.get(name)
+    if hasattr(_dash.callback_context, "cookies"):
+        token = _dash.callback_context.cookies.get(name)
+    else:
+        token = _flask.request.cookies.get(name)
     return _b64.b64decode(token)
 
 
