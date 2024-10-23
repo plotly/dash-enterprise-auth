@@ -96,19 +96,32 @@ def create_logout_button(label="Logout", style=None):
     )
 
 
+def _raise_context_error():
+    raise RuntimeError(
+            "Could not find user token from the context.\n"
+            "Make sure you are running inside a flask request or a dash callback."
+        )
+
+
 def _get_decoded_token(name):
-    if hasattr(_dash.callback_context, "cookies"):
-        token = _dash.callback_context.cookies.get(name)
-    else:
+    token = None
+    if _flask.has_request_context():
         token = _flask.request.cookies.get(name)
+    if not token and hasattr(_dash.callback_context, "cookies"):
+        # 
+        token = _dash.callback_context.cookies.get(name)
+    if token is None:
+        _raise_context_error()
     return _b64.b64decode(token)
 
 
-@_need_request_context
 def get_user_data():
     jwks_url = _os.getenv("DASH_JWKS_URL")
     info_url = _os.getenv("DASH_USER_INFO_URL")
     if not jwks_url:
+        if not _flask.has_request_context():
+            # Old DE4 should always be in a request context.
+            _raise_context_error()
         return _json.loads(_flask.request.headers.get("Plotly-User-Data", "{}"))
     try:
         jwks_client = UaPyJWKClient(jwks_url)
@@ -145,7 +158,6 @@ def get_user_data():
     return {}
 
 
-@_need_request_context
 def get_username():
     """
     Get the current user.
