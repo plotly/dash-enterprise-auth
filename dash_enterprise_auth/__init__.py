@@ -3,6 +3,7 @@ dash-enterprise-auth
 
 Methods to integrate dash apps with the authentication from Dash Enterprise.
 """
+
 import datetime as _dt
 import os as _os
 import platform as _platform
@@ -19,6 +20,7 @@ import traceback
 
 
 import dash as _dash
+
 if hasattr(_dash, "dcc"):
     _dcc = _dash.dcc
 else:
@@ -48,11 +50,26 @@ def _need_request_context(func):
     @_ft.wraps(func)
     def _wrap(*args, **kwargs):
         if not _flask.has_request_context():
+            try:
+                is_jupyter_kernel = (
+                    get_ipython().__class__.__name__ == "ZMQInteractiveShell"  # type: ignore
+                )
+            except NameError:
+                is_jupyter_kernel = False
+
             raise RuntimeError(
-                f"`{func.__name__}` method needs a flask/dash request"
-                f" context to run. Make sure to run `{func.__name__}` from a callback."
+                (
+                    f"The `{func.__name__}` method must be called within a Flask/Dash request context and cannot "
+                    f"be run directly in a notebook cell. This will still run correctly in your App Studio preview "
+                    f"or deployed Dash app."
+                    if is_jupyter_kernel
+                    else f"The `{func.__name__}` method needs a Flask/Dash request context to run. "
+                    f"Make sure to run `{func.__name__}` from a callback."
+                )
             )
+
         return func(*args, **kwargs)
+
     return _wrap
 
 
@@ -69,9 +86,7 @@ def create_logout_button(label="Logout", style=None):
     """
     logout_url = _os.getenv("DASH_LOGOUT_URL")
     if not logout_url:
-        raise RuntimeError(
-            "DASH_LOGOUT_URL was not set in the environment."
-        )
+        raise RuntimeError("DASH_LOGOUT_URL was not set in the environment.")
 
     if not _os.getenv("DASH_JWKS_URL"):
         return _dcc.LogoutButton(
@@ -89,10 +104,10 @@ def create_logout_button(label="Logout", style=None):
             label,
             href=logout_url,
             className="dash-logout-btn",
-            style={"textDecoration": "none"}
+            style={"textDecoration": "none"},
         ),
         className="dash-logout-frame",
-        style=btn_style
+        style=btn_style,
     )
 
 
