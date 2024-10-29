@@ -37,6 +37,7 @@ ua_string = (
     f" Platform={_platform.system()}/{_platform.release()})"
 )
 
+_undefined = object()
 
 class UaPyJWKClient(_jwt.PyJWKClient):
     def fetch_data(self) -> Any:
@@ -115,14 +116,15 @@ def _raise_context_error():
 
 
 def _get_decoded_token(name):
-    token = None
+    token = _undefined
     if _flask.has_request_context():
         token = _flask.request.cookies.get(name)
     if not token and hasattr(_dash.callback_context, "cookies"):
-        #
         token = _dash.callback_context.cookies.get(name)
-    if token is None:
+    if token is _undefined:
         _raise_context_error()
+    if token is None:
+        return token
     return _b64.b64decode(token)
 
 
@@ -138,6 +140,10 @@ def get_user_data():
         jwks_client = UaPyJWKClient(jwks_url)
 
         token = _get_decoded_token("kcIdToken")
+
+        if not token:
+            return {}
+
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
         info = _jwt.decode(
