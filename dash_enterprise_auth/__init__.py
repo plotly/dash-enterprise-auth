@@ -3,6 +3,7 @@ dash-enterprise-auth
 
 Methods to integrate dash apps with the authentication from Dash Enterprise.
 """
+
 import datetime as _dt
 import os as _os
 import platform as _platform
@@ -19,6 +20,7 @@ import traceback
 
 
 import dash as _dash
+
 if hasattr(_dash, "dcc"):
     _dcc = _dash.dcc
 else:
@@ -53,6 +55,7 @@ def _need_request_context(func):
                 f" context to run. Make sure to run `{func.__name__}` from a callback."
             )
         return func(*args, **kwargs)
+
     return _wrap
 
 
@@ -69,9 +72,7 @@ def create_logout_button(label="Logout", style=None):
     """
     logout_url = _os.getenv("DASH_LOGOUT_URL")
     if not logout_url:
-        raise RuntimeError(
-            "DASH_LOGOUT_URL was not set in the environment."
-        )
+        raise RuntimeError("DASH_LOGOUT_URL was not set in the environment.")
 
     if not _os.getenv("DASH_JWKS_URL"):
         return _dcc.LogoutButton(
@@ -89,18 +90,28 @@ def create_logout_button(label="Logout", style=None):
             label,
             href=logout_url,
             className="dash-logout-btn",
-            style={"textDecoration": "none"}
+            style={"textDecoration": "none"},
         ),
         className="dash-logout-frame",
-        style=btn_style
+        style=btn_style,
     )
 
 
 def _raise_context_error():
-    raise RuntimeError(
-            "Could not find user token from the context.\n"
-            "Make sure you are running inside a flask request or a dash callback."
+    try:
+        is_jupyter_kernel = (
+            get_ipython().__class__.__name__ == "ZMQInteractiveShell"  # type: ignore
         )
+    except NameError:
+        is_jupyter_kernel = False
+
+    raise RuntimeError(
+        "dash-enterprise-auth functions should be called in a flask request context or dash callback and will not run in a notebook cell.\n"
+        "This codeblock will still run correctly in your App Studio preview or deployed Dash app."
+        if is_jupyter_kernel
+        else "Could not find user token from the context.\n"
+        "Make sure you are running inside a flask request or a dash callback."
+    )
 
 
 def _get_decoded_token(name):
@@ -108,7 +119,7 @@ def _get_decoded_token(name):
     if _flask.has_request_context():
         token = _flask.request.cookies.get(name)
     if not token and hasattr(_dash.callback_context, "cookies"):
-        # 
+        #
         token = _dash.callback_context.cookies.get(name)
     if token is None:
         _raise_context_error()
