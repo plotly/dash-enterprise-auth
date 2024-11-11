@@ -3,6 +3,7 @@ dash-enterprise-auth
 
 Methods to integrate dash apps with the authentication from Dash Enterprise.
 """
+
 import datetime as _dt
 import os as _os
 import platform as _platform
@@ -19,6 +20,7 @@ import traceback
 
 
 import dash as _dash
+
 if hasattr(_dash, "dcc"):
     _dcc = _dash.dcc
 else:
@@ -35,6 +37,7 @@ ua_string = (
     f" Platform={_platform.system()}/{_platform.release()})"
 )
 
+_undefined = object()
 
 class UaPyJWKClient(_jwt.PyJWKClient):
     def fetch_data(self) -> Any:
@@ -53,6 +56,7 @@ def _need_request_context(func):
                 f" context to run. Make sure to run `{func.__name__}` from a callback."
             )
         return func(*args, **kwargs)
+
     return _wrap
 
 
@@ -69,9 +73,7 @@ def create_logout_button(label="Logout", style=None):
     """
     logout_url = _os.getenv("DASH_LOGOUT_URL")
     if not logout_url:
-        raise RuntimeError(
-            "DASH_LOGOUT_URL was not set in the environment."
-        )
+        raise RuntimeError("DASH_LOGOUT_URL was not set in the environment.")
 
     if not _os.getenv("DASH_JWKS_URL"):
         return _dcc.LogoutButton(
@@ -89,28 +91,59 @@ def create_logout_button(label="Logout", style=None):
             label,
             href=logout_url,
             className="dash-logout-btn",
-            style={"textDecoration": "none"}
+            style={"textDecoration": "none"},
         ),
         className="dash-logout-frame",
-        style=btn_style
+        style=btn_style,
+    )
+
+
+def _raise_context_error():
+    try:
+        is_jupyter_kernel = (
+            get_ipython().__class__.__name__ == "ZMQInteractiveShell"  # type: ignore
+        )
+    except NameError:
+        is_jupyter_kernel = False
+
+    raise RuntimeError(
+        "dash-enterprise-auth functions should be called in a flask request context or dash callback and will not run in a notebook cell.\n"
+        "This codeblock will still run correctly in your App Studio preview or deployed Dash app."
+        if is_jupyter_kernel
+        else "Could not find user token from the context.\n"
+        "Make sure you are running inside a flask request or a dash callback."
     )
 
 
 def _get_decoded_token(name):
-    token = _flask.request.cookies.get(name)
+    token = _undefined
+    if _flask.has_request_context():
+        token = _flask.request.cookies.get(name)
+    if token is _undefined and hasattr(_dash.callback_context, "cookies"):
+        token = _dash.callback_context.cookies.get(name)
+    if token is _undefined:
+        _raise_context_error()
+    if token is None:
+        return token
     return _b64.b64decode(token)
 
 
-@_need_request_context
 def get_user_data():
     jwks_url = _os.getenv("DASH_JWKS_URL")
     info_url = _os.getenv("DASH_USER_INFO_URL")
     if not jwks_url:
+        if not _flask.has_request_context():
+            # Old DE4 should always be in a request context.
+            _raise_context_error()
         return _json.loads(_flask.request.headers.get("Plotly-User-Data", "{}"))
     try:
         jwks_client = UaPyJWKClient(jwks_url)
 
         token = _get_decoded_token("kcIdToken")
+
+        if not token:
+            return {}
+
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
         info = _jwt.decode(
@@ -142,7 +175,6 @@ def get_user_data():
     return {}
 
 
-@_need_request_context
 def get_username():
     """
     Get the current user.
