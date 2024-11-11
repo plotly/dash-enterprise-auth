@@ -119,7 +119,7 @@ def _get_decoded_token(name):
     token = _undefined
     if _flask.has_request_context():
         token = _flask.request.cookies.get(name)
-    if not token and hasattr(_dash.callback_context, "cookies"):
+    if token is _undefined and hasattr(_dash.callback_context, "cookies"):
         token = _dash.callback_context.cookies.get(name)
     if token is _undefined:
         _raise_context_error()
