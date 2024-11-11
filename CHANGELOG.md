@@ -2,6 +2,11 @@
 All notable changes to `dash-enterprise-auth` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.3] - 2024-05-30
+### Fixed
+- Fix get_user_date/username with background callback. [#41](https://github.com/plotly/dash-enterprise-auth/pull/41)
+- Update error message if run in a notebook cell.
+
 ## [0.2.2] - 2024-04-30
 ### Updated
 - Set Flask and Werkzeug upper version bounds to `<3.1`, matching versions with Dash 2.16.1.
