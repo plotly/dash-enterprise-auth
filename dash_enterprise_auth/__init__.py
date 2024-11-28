@@ -108,9 +108,20 @@ def is_jupyter_kernel():
 
 
 def _raise_context_error():
+    notebook_specific_error = (
+        (
+            "Could not get user token from the Jupyter kernel. Try closing and re-opening your notebook. \n"
+            "This codeblock will still run correctly in your App Studio preview or deployed Dash app."
+        )
+        if _os.getenv("DASH_ENTERPRISE_ENV")
+        else (
+            "Could not get user token from the Jupyter kernel.\n"
+            "dash-enterprise-auth methods cannot be called in a notebook cell outside of a Dash Enterprise workspace.\n"
+            "This codeblock will still run correctly in your App Studio preview or deployed Dash app."
+        )
+    )
     raise RuntimeError(
-        "Could not get user token from the Jupyter kernel. Try closing and re-opening your notebook. \n"
-        "This codeblock will still run correctly in your App Studio preview or deployed Dash app."
+        notebook_specific_error
         if is_jupyter_kernel()
         else "Could not find user token from the context.\n"
         "Make sure you are running inside a flask request or a dash callback."
@@ -158,7 +169,9 @@ def get_user_data():
             algorithms=[signing_key._jwk_data.get("alg", "RSA256")],
             # This is fine because the token is already present in the client's cookies
             # in the workspace.
-            audience="account" if is_jupyter_kernel() else _os.getenv("DASH_AUD", "dash"),
+            audience="account"
+            if is_jupyter_kernel()
+            else _os.getenv("DASH_AUD", "dash"),
             options={"verify_exp": True},
         )
         if info_url:
