@@ -2,6 +2,10 @@
 All notable changes to `dash-enterprise-auth` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.4] - 2024-12-02
+### Fixed
+- Dash enteprise auth methods are now functional in the jupyter notebook context within Dash Workspaces via DASH_USER_TOKEN. [#44](https://github.com/plotly/dash-enterprise-auth/pull/44)
+
 ## [0.2.3] - 2024-05-30
 ### Fixed
 - Fix get_user_date/username with background callback. [#41](https://github.com/plotly/dash-enterprise-auth/pull/41)
