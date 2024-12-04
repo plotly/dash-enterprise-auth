@@ -12,7 +12,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dep-{{ checksum ".circleci/config.yml" }}-{{ checksum "setup.py" }}-{{ checksum "requirements.txt" }}-{{ .Environment.CIRCLE_JOB }}
+          key: dep-{{ checksum ".circleci/config.yml" }}-{{ checksum "dash_enterprise_auth/version.py" }}-{{ checksum "setup.py" }}-{{ checksum "requirements.txt" }}-{{ .Environment.CIRCLE_JOB }}
       - run:
           name: Install requirements
           command: |
@@ -21,7 +21,7 @@ jobs:
             python -m pip install --upgrade pip
             pip install -r requirements.txt
       - save_cache:
-          key: dep-{{ checksum ".circleci/config.yml" }}-{{ checksum "setup.py" }}-{{ checksum "requirements.txt" }}-{{ .Environment.CIRCLE_JOB }}
+          key: dep-{{ checksum ".circleci/config.yml" }}-{{ checksum "dash_enterprise_auth/version.py" }}-{{ checksum "setup.py" }}-{{ checksum "requirements.txt" }}-{{ .Environment.CIRCLE_JOB }}
           paths:
             - venv
       - run:
