@@ -76,7 +76,7 @@ def create_logout_button(label="Logout", style=None):
     if not logout_url:
         raise RuntimeError("DASH_LOGOUT_URL was not set in the environment.")
 
-    if not _os.getenv("DASH_JWKS_URL"):
+    if not _os.getenv("DASH_JWKS_URL") and hasattr(_dcc, "LogoutButton"):
         return _dcc.LogoutButton(
             logout_url=logout_url,
             label=label,
