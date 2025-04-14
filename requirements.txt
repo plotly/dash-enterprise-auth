@@ -1,7 +1,7 @@
 -e .
 PyJWT==2.4.0;python_version<"3.7"
 PyJWT==2.8.0;python_version>="3.7"
-cryptography==41.0.4;python_version>="3.7"
+cryptography==42.0.4;python_version>="3.7"
 # Dev requirements
 pytest
 pytest-mock
