@@ -69,7 +69,7 @@ def _get_public_key(token):
 
 
 def _get_de5_user_data(jwt_id_token):
-    public_key = _get_correct_public_key(jwt_id_token)
+    public_key = _get_public_key(jwt_id_token)
     decoded_token = _jwt.decode(jwt_id_token, public_key, algorithms=["RS256"], audience="dash")
     return decoded_token
 
