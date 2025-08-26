@@ -12,7 +12,6 @@ import functools as _ft
 import json as _json
 import urllib as _urllib
 from typing import Any
-from retrying import retry as _retry
 
 import flask as _flask
 import jwt as _jwt
@@ -47,31 +46,6 @@ class UaPyJWKClient(_jwt.PyJWKClient):
             _urllib.request.Request(self.uri, headers={"User-Agent": ua_string})
         ) as response:
             return _json.load(response)
-
-
-@_retry(wait_exponential_multiplier=1000, wait_exponential_max=20000)
-def _get_public_keys(jwks_client):
-    return jwks_client.get_signing_keys()
-
-
-jwks_url = _os.getenv("DASH_JWKS_URL", "")
-jwks_client = UaPyJWKClient(jwks_url)
-public_keys = None
-if jwks_url:
-    public_keys = _get_public_keys(jwks_client)
-
-
-def _get_public_key(token):
-    kid = _jwt.get_unverified_header(token)["kid"]
-    for key in public_keys:
-        if key._jwk_data["kid"] == kid:
-            return key.key
-
-
-def _get_de5_user_data(jwt_id_token):
-    public_key = _get_correct_public_key(jwt_id_token)
-    decoded_token = _jwt.decode(jwt_id_token, public_key, algorithms=["RS256"], audience="dash")
-    return decoded_token
 
 
 def _need_request_context(func):
@@ -229,11 +203,9 @@ def get_username():
     :return: The current user.
     :rtype: str
     """
+    data = get_user_data()
     if not _os.getenv("DASH_JWKS_URL"):
-        data = get_user_data()
         return data.get("username")
-    token = _get_decoded_token("kcIdToken")
-    data = _get_de5_user_data(token)
     return data.get("preferred_username")
 
 
