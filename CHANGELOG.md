@@ -2,6 +2,19 @@
 All notable changes to `dash-enterprise-auth` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.5] - 2025-03-11
+### Fixed
+- Fix dash 3.0 removal of dcc.LogoutButton.
+
+## [0.2.4] - 2024-12-02
+### Fixed
+- Dash enteprise auth methods are now functional in the jupyter notebook context within Dash Workspaces via DASH_USER_TOKEN. [#44](https://github.com/plotly/dash-enterprise-auth/pull/44)
+
+## [0.2.3] - 2024-05-30
+### Fixed
+- Fix get_user_date/username with background callback. [#41](https://github.com/plotly/dash-enterprise-auth/pull/41)
+- Update error message if run in a notebook cell.
+
 ## [0.2.2] - 2024-04-30
 ### Updated
 - Set Flask and Werkzeug upper version bounds to `<3.1`, matching versions with Dash 2.16.1.

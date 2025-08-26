@@ -3,6 +3,7 @@ dash-enterprise-auth
 
 Methods to integrate dash apps with the authentication from Dash Enterprise.
 """
+
 import datetime as _dt
 import os as _os
 import platform as _platform
@@ -36,6 +37,8 @@ ua_string = (
     f"Plotly/{__version__} (Language=Python/{_platform.python_version()};"
     f" Platform={_platform.system()}/{_platform.release()})"
 )
+
+_undefined = object()
 
 
 class UaPyJWKClient(_jwt.PyJWKClient):
@@ -97,11 +100,9 @@ def create_logout_button(label="Logout", style=None):
     """
     logout_url = _os.getenv("DASH_LOGOUT_URL")
     if not logout_url:
-        raise RuntimeError(
-            "DASH_LOGOUT_URL was not set in the environment."
-        )
+        raise RuntimeError("DASH_LOGOUT_URL was not set in the environment.")
 
-    if not _os.getenv("DASH_JWKS_URL"):
+    if not _os.getenv("DASH_JWKS_URL") and hasattr(_dcc, "LogoutButton"):
         return _dcc.LogoutButton(
             logout_url=logout_url,
             label=label,
@@ -117,40 +118,91 @@ def create_logout_button(label="Logout", style=None):
             label,
             href=logout_url,
             className="dash-logout-btn",
-            style={"textDecoration": "none"}
+            style={"textDecoration": "none"},
         ),
         className="dash-logout-frame",
         style=btn_style,
     )
 
 
+def is_jupyter_kernel():
+    """Check if the current environment is a Jupyter kernel."""
+    try:
+        return get_ipython().__class__.__name__ == "ZMQInteractiveShell"  # type: ignore
+    except NameError:
+        return False
+
+
+def _raise_context_error():
+    notebook_specific_error = (
+        (
+            "Could not get user token from the Jupyter kernel. Try closing and re-opening your notebook. \n"
+            "This codeblock will still run correctly in your App Studio preview or deployed Dash app."
+        )
+        if _os.getenv("DASH_ENTERPRISE_ENV")
+        else (
+            "Could not get user token from the Jupyter kernel.\n"
+            "dash-enterprise-auth methods cannot be called in a notebook cell outside of a Dash Enterprise workspace.\n"
+            "This codeblock will still run correctly in your App Studio preview or deployed Dash app."
+        )
+    )
+    raise RuntimeError(
+        notebook_specific_error
+        if is_jupyter_kernel()
+        else "Could not find user token from the context.\n"
+        "Make sure you are running inside a flask request or a dash callback."
+    )
+
+
 def _get_decoded_token(name):
-    token = _flask.request.cookies.get(name)
+    token = _undefined
+    if _flask.has_request_context():
+        token = _flask.request.cookies.get(name)
+    if token is _undefined and hasattr(_dash.callback_context, "cookies"):
+        token = _dash.callback_context.cookies.get(name)
+    if token is _undefined:
+        _raise_context_error()
+    if token is None:
+        return token
     return _b64.b64decode(token)
 
 
-@_need_request_context
 def get_user_data():
     jwks_url = _os.getenv("DASH_JWKS_URL")
     info_url = _os.getenv("DASH_USER_INFO_URL")
     if not jwks_url:
+        if not _flask.has_request_context():
+            # Old DE4 should always be in a request context.
+            _raise_context_error()
         return _json.loads(_flask.request.headers.get("Plotly-User-Data", "{}"))
     try:
         jwks_client = UaPyJWKClient(jwks_url)
 
-        token = _get_decoded_token("kcIdToken")
+        # In workspace, the user token is stored via the dash_user_token environment
+        # variable to make it available in the Jupyter kernel.
+        dash_user_token = is_jupyter_kernel() and _os.getenv("DASH_USER_TOKEN")
+
+        token = dash_user_token or _get_decoded_token("kcIdToken")
+
+        if not token:
+            return {}
+
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
         info = _jwt.decode(
             token,
             signing_key.key,
             algorithms=[signing_key._jwk_data.get("alg", "RSA256")],
-            audience=_os.getenv("DASH_AUD", "dash"),
+            # This is fine because the token is already present in the client's cookies
+            # in the workspace.
+            audience="account"
+            if is_jupyter_kernel()
+            else _os.getenv("DASH_AUD", "dash"),
             options={"verify_exp": True},
         )
         if info_url:
-            tok = _get_decoded_token("kcToken")
-            authorization = f"Bearer {tok.decode()}"
+            tok = dash_user_token or _get_decoded_token("kcToken")
+            authorization = f"Bearer {dash_user_token or tok.decode()}"
             response = _requests.get(
                 info_url,
                 headers={
@@ -170,7 +222,6 @@ def get_user_data():
     return {}
 
 
-@_need_request_context
 def get_username():
     """
     Get the current user.
