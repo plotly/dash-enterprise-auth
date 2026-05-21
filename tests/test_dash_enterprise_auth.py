@@ -55,10 +55,19 @@ def test_get_username(mocker, environ, headers, cookies):
         assert username == "Mario"
 
 
+_NO_JWKS_ASSERTIONS = (
+    [([], dcc.LogoutButton, {'label': 'Logout', 'logout_url': LOGOUT_URL})]
+    if hasattr(dcc, 'LogoutButton')
+    else [
+        ([], html.Div, {'style': {'display': 'inline-block', 'padding': '1rem'}}),
+        (['children'], html.A, {'children': 'Logout', 'href': LOGOUT_URL})
+    ]
+)
+
 @pytest.mark.parametrize("environ, type_assertions", [
     ({
         'DASH_LOGOUT_URL': LOGOUT_URL,
-    }, [([], dcc.LogoutButton, {'label': 'Logout', 'logout_url': LOGOUT_URL})]),
+    }, _NO_JWKS_ASSERTIONS),
     ({
         'DASH_LOGOUT_URL': LOGOUT_URL,
         'DASH_JWKS_URL': 'https://foo.bar'
