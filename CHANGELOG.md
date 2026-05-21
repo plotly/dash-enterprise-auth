@@ -2,6 +2,13 @@
 All notable changes to `dash-enterprise-auth` will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.6] - 2026-05-21
+### Updated
+- Relax Flask and Werkzeug version constraints to `<3.2`, allowing werkzeug >=3.1.5 (CVE-2025-66221). [#55](https://github.com/plotly/dash-enterprise-auth/issues/55)
+
+### Fixed
+- Fix test compatibility with Dash 3+ removal of `dcc.LogoutButton`.
+
 ## [0.2.5] - 2025-03-11
 ### Fixed
 - Fix dash 3.0 removal of dcc.LogoutButton.
